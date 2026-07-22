@@ -1,0 +1,23 @@
+[columns.first_name]
+entity = "Person"
+property = "first_name"
+
+[columns.last_name]
+entity = "Person"
+property = "last_name"
+
+[columns.email]
+entity = "Email"
+property = "email"
+
+[columns.company]
+entity = "Company"
+property = "company"
+
+[columns.role]
+entity = "Role"
+property = "role"
+
+[columns.start_date]
+entity = "Date"
+property = "start_date"
