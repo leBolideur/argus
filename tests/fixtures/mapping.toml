@@ -21,3 +21,13 @@ property = "value"
 [columns.start_date]
 entity = "Date"
 property = "value"
+
+[[relationships]]
+type = "WORK_FOR"
+source = "Person"
+target = "Company"
+
+[[relationships]]
+type = "HAS_EMAIL"
+source = "Person"
+target = "Email"

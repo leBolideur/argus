@@ -1,3 +1,4 @@
+from argus.builder import Builder, Relationship
 from argus.connectors.csv_connector import CSVConnector
 from argus.mapper import Mapper
 from argus.models.entity import Entity
@@ -14,6 +15,9 @@ class Orchestrator:
     def run(self) -> None:
         entities = self.csv_to_entities()
         self.save_entities(entities)
+        builder = Builder(self.mapping_path)
+        relations = builder.build(entities)
+        self.save_relations(relations)
 
     def csv_to_entities(self) -> list[list[Entity]]:
         records = CSVConnector().read(self.source_path)
@@ -24,3 +28,6 @@ class Orchestrator:
 
     def save_entities(self, entities: list[list[Entity]]) -> None:
         self.entities = self.repository.insert_batch_entities(entities)
+
+    def save_relations(self, relations: list[Relationship]) -> None:
+        self.relations = self.repository.insert_batch_relations(relations)
