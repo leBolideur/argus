@@ -8,16 +8,16 @@ property = "last_name"
 
 [columns.email]
 entity = "Email"
-property = "email"
+property = "value"
 
 [columns.company]
 entity = "Company"
-property = "company"
+property = "name"
 
 [columns.role]
 entity = "Role"
-property = "role"
+property = "value"
 
 [columns.start_date]
 entity = "Date"
-property = "start_date"
+property = "value"

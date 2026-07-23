@@ -41,6 +41,14 @@ class SQLiteRepository(BaseRepository):
         self.conn.commit()
         return row["id"]
 
+    def insert_batch_entities(self, batch: list[list[Entity]]) -> list[list[Entity]]:
+        for entities_list in batch:
+            for entity in entities_list:
+                entity_id = self.insert_entity(entity)
+                entity.id = entity_id
+
+        return batch
+
     def get_entity(self, id: int) -> Entity | None:
         query = self.conn.cursor().execute(
             "SELECT * FROM entities WHERE id = :id", {"id": id}
