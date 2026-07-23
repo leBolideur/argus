@@ -6,7 +6,9 @@ from argus.models.record import Record
 
 
 class Mapper:
-    def make_grouped_entities(self, path: str, records: list[Record]):
+    def make_grouped_entities(
+        self, path: str, records: list[Record]
+    ) -> list[list[Entity]]:
         with open(path, "rb") as file:
             mapping = tomllib.load(file)
 
@@ -15,8 +17,9 @@ class Mapper:
             acc: dict = defaultdict(dict)
             for key, value in record.fields.items():
                 if key in mapping["columns"]:
-                    type = mapping["columns"][key]["entity"]
-                    acc[type] = {**acc[type], key: value}
+                    entity_type = mapping["columns"][key]["entity"]
+                    entity_property = mapping["columns"][key]["property"]
+                    acc[entity_type] = {**acc[entity_type], entity_property: value}
 
             group = []
             for key, value in acc.items():

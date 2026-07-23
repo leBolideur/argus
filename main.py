@@ -1,18 +1,14 @@
-from argus.connectors.csv_connector import CSVConnector
-from argus.mapper import Mapper
+from argus.orchestrator import Orchestrator
 
 
 def main():
     print("Hello from argus!")
 
-    connector = CSVConnector()
-    records = connector.read("tests/fixtures/employees.csv")
+    orchestrator = Orchestrator(
+        "tests/fixtures/employees.csv", "tests/fixtures/mapping.toml", "argus.db"
+    )
 
-    mapper = Mapper()
-    entities = mapper.make_grouped_entities("tests/fixtures/mapping.toml", records)
-    for entity in entities:
-        print(entity)
-        print()
+    orchestrator.run()
 
 
 if __name__ == "__main__":
