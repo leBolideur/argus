@@ -19,6 +19,8 @@ class Orchestrator:
         relations = builder.build(entities)
         self.save_relations(relations)
 
+        self.repository.close()
+
     def csv_to_entities(self) -> list[list[Entity]]:
         records = CSVConnector().read(self.source_path)
         mapper = Mapper()
@@ -27,7 +29,7 @@ class Orchestrator:
         return entities
 
     def save_entities(self, entities: list[list[Entity]]) -> None:
-        self.entities = self.repository.insert_batch_entities(entities)
+        self.repository.insert_batch_entities(entities)
 
     def save_relations(self, relations: list[Relationship]) -> None:
-        self.relations = self.repository.insert_batch_relations(relations)
+        self.repository.insert_batch_relations(relations)

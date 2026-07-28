@@ -49,7 +49,7 @@ def test_relationships(repo: SQLiteRepository):
     relationship_id = repo.insert_relationship(relationship)
     assert relationship_id == 1
 
-    get_relationships = repo.get_by_source(entity1)
+    get_relationships = repo.get_relations_by_source(entity1)
     assert len(get_relationships) == 1
 
 

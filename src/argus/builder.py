@@ -28,9 +28,17 @@ class Builder:
     def _find_entity_by_source(
         self, source: str, grouped_entities: list[Entity]
     ) -> Entity | None:
-        return list(filter(lambda entity: entity.type == source, grouped_entities))[0]
+        entity = list(filter(lambda entity: entity.type == source, grouped_entities))[0]
+        if entity is not None:
+            return entity
+
+        return None
 
     def _find_entity_by_target(
         self, target: str, grouped_entities: list[Entity]
     ) -> Entity | None:
-        return list(filter(lambda entity: entity.type == target, grouped_entities))[0]
+        entity = list(filter(lambda entity: entity.type == target, grouped_entities))[0]
+        if entity is not None:
+            return entity
+
+        return None
