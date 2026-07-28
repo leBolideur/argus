@@ -9,14 +9,19 @@ class Orchestrator:
     def __init__(self, source_path: str, mapping_path: str, db_path: str):
         self.source_path = source_path
         self.mapping_path = mapping_path
+        self.nb_entities = 0
+        self.nb_relations = 0
 
         self.repository = SQLiteRepository(db_path=db_path)
 
     def run(self) -> None:
         entities = self.csv_to_entities()
+        self.nb_entities = len(entities)
         self.save_entities(entities)
+
         builder = Builder(self.mapping_path)
         relations = builder.build(entities)
+        self.nb_relations = len(relations)
         self.save_relations(relations)
 
         self.repository.close()
