@@ -14,6 +14,10 @@ class BaseRepository(ABC):
         pass
 
     @abstractmethod
+    def insert_batch_entities(self, batch: list[list[Entity]]) -> list[list[Entity]]:
+        pass
+
+    @abstractmethod
     def get_entity(self, id: int) -> Entity | None:
         pass
 
@@ -22,7 +26,13 @@ class BaseRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_source(self, source: int) -> list[Relationship]:
+    def insert_batch_relations(
+        self, relations: list[Relationship]
+    ) -> list[Relationship]:
+        pass
+
+    @abstractmethod
+    def get_relations_by_source(self, source: int) -> list[Relationship]:
         pass
 
     @abstractmethod

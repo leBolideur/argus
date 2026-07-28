@@ -79,7 +79,16 @@ class SQLiteRepository(BaseRepository):
         self.conn.commit()
         return row["id"]
 
-    def get_by_source(self, source: int) -> list[Relationship]:
+    def insert_batch_relations(
+        self, relations: list[Relationship]
+    ) -> list[Relationship]:
+        for relation in relations:
+            relation_id = self.insert_relationship(relation)
+            relation.id = relation_id
+
+        return relations
+
+    def get_relations_by_source(self, source: int) -> list[Relationship]:
         query = self.conn.cursor().execute(
             "SELECT * FROM relationships WHERE source = :source", {"source": source}
         )
