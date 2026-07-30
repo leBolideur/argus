@@ -6,7 +6,6 @@ from typing import Annotated
 
 from argus.orchestrator import Orchestrator
 from argus.repositories.sqlite_repository import SQLiteRepository
-from argus.models.entity import Entity
 
 err_console = Console(stderr=True)
 app = typer.Typer()
@@ -53,20 +52,19 @@ def inspect(entity_id: Annotated[int, typer.Argument()]):
 
 
 @app.command()
-def search(email: Annotated[str, typer.Option("--email")]):
+def search(
+    property: Annotated[str, typer.Option("-p")],
+    value: Annotated[str, typer.Option("-v")],
+):
     repo = SQLiteRepository("argus.db")
-    query = repo.conn.cursor().execute(
-        "SELECT * FROM entities WHERE json_extract(properties, '$.value') = :email",
-        {"email": email},
-    )
-    results = query.fetchall()
-    entities = [
-        Entity(id=row["id"], type=row["type"], properties=json.loads(row["properties"]))
-        for row in results
-    ]
-    print(entities)
 
-    repo.close()
+    try:
+        entities = repo.search_entities_by_property(property, value)
+        print(entities)
+    except ValueError as e:
+        err_console.print(f"[red bold]error: [/red bold]{e}")
+    finally:
+        repo.close()
 
 
 if __name__ == "__main__":

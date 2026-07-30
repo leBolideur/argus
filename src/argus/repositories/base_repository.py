@@ -41,5 +41,9 @@ class BaseRepository(ABC):
         pass
 
     @abstractmethod
+    def search_entities_by_property(self, property: str, value: str) -> list[Entity]:
+        pass
+
+    @abstractmethod
     def close(self) -> None:
         pass
