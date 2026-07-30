@@ -17,27 +17,18 @@ class Builder:
         relations: list[Relationship] = []
         for entities in grouped_entities:
             for relation in self.relations_map:
-                source = self._find_entity_by_source(relation["source"], entities)
-                target = self._find_entity_by_source(relation["target"], entities)
+                source = self._find_entity_by_type(relation["source"], entities)
+                target = self._find_entity_by_type(relation["target"], entities)
                 if source is not None and target is not None:
                     relation = Relationship(relation["type"], source.id, target.id, {})
                     relations.append(relation)
 
         return relations
 
-    def _find_entity_by_source(
-        self, source: str, grouped_entities: list[Entity]
+    def _find_entity_by_type(
+        self, type: str, grouped_entities: list[Entity]
     ) -> Entity | None:
-        entities = list(filter(lambda entity: entity.type == source, grouped_entities))
-        if len(entities) > 0:
-            return entities[0]
-
-        return None
-
-    def _find_entity_by_target(
-        self, target: str, grouped_entities: list[Entity]
-    ) -> Entity | None:
-        entities = list(filter(lambda entity: entity.type == target, grouped_entities))
+        entities = list(filter(lambda entity: entity.type == type, grouped_entities))
         if len(entities) > 0:
             return entities[0]
 

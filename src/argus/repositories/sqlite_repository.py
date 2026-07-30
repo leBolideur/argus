@@ -1,4 +1,5 @@
 from typing import Any
+import re
 import sqlite3
 import json
 
@@ -122,6 +123,26 @@ class SQLiteRepository(BaseRepository):
         )
         rows = query.fetchall()
         return rows
+
+    def search_entities_by_property(self, property: str, value: str) -> list[Entity]:
+        safe_property = re.match("^[a-zA-Z0-9-_.]+$", property)
+        if not safe_property:
+            raise ValueError(f"Invalid property name: {property}")
+
+        query = self.conn.cursor().execute(
+            "SELECT * FROM entities WHERE json_extract(properties, :property) = :value",
+            {"property": f"$.{safe_property.string}", "value": value},
+        )
+        results = query.fetchall()
+
+        entities = [
+            Entity(
+                id=row["id"], type=row["type"], properties=json.loads(row["properties"])
+            )
+            for row in results
+        ]
+
+        return entities
 
     def close(self):
         self.conn.close()
