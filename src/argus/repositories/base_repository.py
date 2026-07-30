@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import sqlite3
+from typing import Any
 
 from argus.models.entity import Entity
 from argus.models.relationship import Relationship
@@ -37,7 +37,7 @@ class BaseRepository(ABC):
         pass
 
     @abstractmethod
-    def get_relations_by_source_enriched(self, source: int) -> list[sqlite3.Row]:
+    def get_relations_by_source_enriched(self, source: int) -> list[Any]:
         pass
 
     @abstractmethod

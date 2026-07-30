@@ -1,3 +1,4 @@
+from typing import Any
 import sqlite3
 import json
 
@@ -107,7 +108,7 @@ class SQLiteRepository(BaseRepository):
 
         return relationships
 
-    def get_relations_by_source_enriched(self, source: int) -> list[sqlite3.Row]:
+    def get_relations_by_source_enriched(self, source: int) -> list[Any]:
         query = self.conn.cursor().execute(
             """SELECT
                  r.id, r.type, r.source, r.target,

@@ -16,7 +16,7 @@ class Orchestrator:
 
     def run(self) -> None:
         entities = self.csv_to_entities()
-        self.nb_entities = len(entities)
+        self.nb_entities = sum([len(group) for group in entities])
         self.save_entities(entities)
 
         builder = Builder(self.mapping_path)
