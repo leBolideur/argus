@@ -4,7 +4,15 @@ version = "0.1.0"
 description = "Argus transforms disconnected data into connected knowledge."
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "typer>=0.27.0",
+]
+
+[tool.uv]
+package = true
+
+[project.scripts]
+argus = "argus.cli:app"
 
 [dependency-groups]
 dev = [

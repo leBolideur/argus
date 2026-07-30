@@ -1,3 +1,4 @@
+from typing import Any
 import sqlite3
 import json
 
@@ -106,6 +107,21 @@ class SQLiteRepository(BaseRepository):
         ]
 
         return relationships
+
+    def get_relations_by_source_enriched(self, source: int) -> list[Any]:
+        query = self.conn.cursor().execute(
+            """SELECT
+                 r.id, r.type, r.source, r.target,
+                 s.id as source_id, s.type as source_type, s.properties as source_props,
+                 t.id as target_id, t.type as target_type, t.properties as target_props
+                 FROM relationships r
+                 INNER JOIN entities s ON r.source = s.id
+                 INNER JOIN entities t ON r.target = t.id
+                 WHERE r.source = :source""",
+            {"source": source},
+        )
+        rows = query.fetchall()
+        return rows
 
     def close(self):
         self.conn.close()
