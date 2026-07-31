@@ -66,6 +66,23 @@ class SQLiteRepository(BaseRepository):
             properties=json.loads(entity["properties"]),
         )
 
+    def get_all_entities(self) -> list[Entity]:
+        query = self.conn.cursor().execute("SELECT * FROM entities")
+        entities = query.fetchall()
+        return entities
+
+    def get_all_entities_by_type(self, type: str) -> list[Entity]:
+        query = self.conn.cursor().execute(
+            "SELECT * FROM entities WHERE type = :type", {"type": type}
+        )
+        rows = query.fetchall()
+        return [
+            Entity(
+                id=row["id"], type=row["type"], properties=json.loads(row["properties"])
+            )
+            for row in rows
+        ]
+
     def insert_relationship(self, relationship: Relationship) -> int:
         properties = json.dumps(relationship.properties)
         query = self.conn.cursor().execute(

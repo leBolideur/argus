@@ -23,6 +23,14 @@ class BaseRepository(ABC):
         pass
 
     @abstractmethod
+    def get_all_entities(self) -> list[Entity]:
+        pass
+
+    @abstractmethod
+    def get_all_entities_by_type(self, type: str) -> list[Entity]:
+        pass
+
+    @abstractmethod
     def insert_relationship(self, relationship: Relationship) -> int:
         pass
 
