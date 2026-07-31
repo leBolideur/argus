@@ -14,7 +14,7 @@ class Orchestrator:
         self.nb_entities = 0
         self.nb_relations = 0
 
-        self.repository = SQLiteRepository(db_path=db_path)
+        self.repo = SQLiteRepository(db_path=db_path)
 
     def run(self) -> None:
         entities = self._csv_to_entities()
@@ -26,10 +26,10 @@ class Orchestrator:
         self.nb_relations = len(relations)
         self._save_relations(relations)
 
-        resolver = Resolver(self.mapping_path, self.repository, ExactMatchComparer())
+        resolver = Resolver(self.mapping_path, self.repo, ExactMatchComparer())
         resolver.resolve()
 
-        self.repository.close()
+        self.repo.close()
 
     def _csv_to_entities(self) -> list[list[Entity]]:
         records = CSVConnector().read(self.source_path)
@@ -39,7 +39,7 @@ class Orchestrator:
         return entities
 
     def _save_entities(self, entities: list[list[Entity]]) -> None:
-        self.repository.insert_batch_entities(entities)
+        self.repo.insert_batch_entities(entities)
 
     def _save_relations(self, relations: list[Relationship]) -> None:
-        self.repository.insert_batch_relations(relations)
+        self.repo.insert_batch_relations(relations)

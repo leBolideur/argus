@@ -23,6 +23,10 @@ class BaseRepository(ABC):
         pass
 
     @abstractmethod
+    def delete_entity(self, id: int) -> None:
+        pass
+
+    @abstractmethod
     def get_all_entities(self) -> list[Entity]:
         pass
 
@@ -50,6 +54,10 @@ class BaseRepository(ABC):
 
     @abstractmethod
     def search_entities_by_property(self, property: str, value: str) -> list[Entity]:
+        pass
+
+    @abstractmethod
+    def reassign_relations(self, old_id: int, new_id: int) -> None:
         pass
 
     @abstractmethod

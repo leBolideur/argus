@@ -66,10 +66,20 @@ class SQLiteRepository(BaseRepository):
             properties=json.loads(entity["properties"]),
         )
 
+    def delete_entity(self, id: int) -> None:
+        self.conn.cursor().execute("DELETE FROM entities WHERE id = :id", {"id": id})
+
     def get_all_entities(self) -> list[Entity]:
         query = self.conn.cursor().execute("SELECT * FROM entities")
-        entities = query.fetchall()
-        return entities
+        rows = query.fetchall()
+        return [
+            Entity(
+                id=entity["id"],
+                type=entity["type"],
+                properties=json.loads(entity["properties"]),
+            )
+            for entity in rows
+        ]
 
     def get_all_entities_by_type(self, type: str) -> list[Entity]:
         query = self.conn.cursor().execute(
@@ -160,6 +170,12 @@ class SQLiteRepository(BaseRepository):
         ]
 
         return entities
+
+    def reassign_relations(self, old_id: int, new_id: int) -> None:
+        self.conn.cursor().execute(
+            "UPDATE relationships SET source = :new_id, target = :new_id  WHERE source = :old_id OR target = :old_id",
+            {"old_id": old_id, "new_id": new_id},
+        )
 
     def close(self):
         self.conn.close()
