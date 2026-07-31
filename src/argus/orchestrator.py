@@ -4,6 +4,7 @@ from argus.connectors.csv_connector import CSVConnector
 from argus.mapper import Mapper
 from argus.models.entity import Entity
 from argus.repositories.sqlite_repository import SQLiteRepository
+from argus.resolver.exactmatch_comparer import ExactMatchComparer
 
 
 class Orchestrator:
@@ -25,7 +26,7 @@ class Orchestrator:
         self.nb_relations = len(relations)
         self._save_relations(relations)
 
-        resolver = Resolver(self.mapping_path, self.repository)
+        resolver = Resolver(self.mapping_path, self.repository, ExactMatchComparer())
         resolver.resolve()
 
         self.repository.close()

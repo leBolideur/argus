@@ -17,7 +17,7 @@ def import_(
     mapping_path: Annotated[str, typer.Option("-m")] = "mapping.toml",
 ):
     print(f"source: {source_path}\tmapping_path: {mapping_path}")
-    orchestrator = Orchestrator(source_path, mapping_path, "argus.db")
+    orchestrator = Orchestrator(source_path, mapping_path, ":memory:")
 
     orchestrator.run()
     print(
