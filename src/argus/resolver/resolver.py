@@ -1,17 +1,24 @@
 import tomllib
+from dataclasses import dataclass
 
-from argus.resolver.merger import Merger
-from argus.repositories.base_repository import BaseRepository
-from argus.resolver.base_comparer import BaseComparer
+from argus.models.entity import Entity
+from argus.resolver.exactmatch_comparer import ExactMatchComparer
+
+
+@dataclass
+class Doublon:
+    entity_type: str
+    prop_key: str
+    normalized_value: str
+    entities: list[Entity]
 
 
 class Resolver:
-    def __init__(self, mapping_path: str, repo: BaseRepository, comparer: BaseComparer):
+    def __init__(self, mapping_path: str):
         self.mapping_path = mapping_path
-        self.repo = repo
-        self.comparer = comparer
+        self.comparer = ExactMatchComparer()
 
-    def resolve(self):
+    def resolve(self, grouped_entities: list[list[Entity]]):
         unique_keys = self._get_unique_keys()
         if len(unique_keys) == 0:
             return
@@ -20,19 +27,34 @@ class Resolver:
         key = unique_keys[0]
 
         entity_type, _, prop_key = key
-        entities = self.repo.get_all_entities_by_type(entity_type)
 
-        merger = Merger(self.repo)
-        for i, e1 in enumerate(entities):
-            rest = entities[i + 1 :]
-            for e2 in rest:
-                if (not e1.properties[prop_key]) or (not e2.properties[prop_key]):
+        doublons = self._search_doublons(entity_type, prop_key, grouped_entities)
+
+        return doublons
+
+    def _search_doublons(
+        self, entity_type: str, prop_key: str, grouped_entities: list[list[Entity]]
+    ) -> list[Doublon]:
+        doublons: dict[str, list[Entity]] = {}
+        for group in grouped_entities:
+            for entity in group:
+                if entity.type != entity_type:
                     continue
 
-                if self.comparer.compare(e1, e2, property_key=prop_key) == 1.0:
-                    print(f"\ne1: {e1}")
-                    print(f"e2: {e2}\n")
-                    merger.merge(e1, e2)
+                discriminent = self.comparer.get_key(entity, prop_key)
+                if discriminent in doublons.keys():
+                    doublons[discriminent].append(entity)
+                else:
+                    doublons[discriminent] = [entity]
+
+        doublons = {key: value for key, value in doublons.items() if len(value) > 1}
+
+        result = []
+        for key, val in doublons.items():
+            d = Doublon(entity_type, prop_key, normalized_value=key, entities=val)
+            result.append(d)
+
+        return result
 
     def _get_unique_keys(self) -> list[list[str]]:
         keys = []

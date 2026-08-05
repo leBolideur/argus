@@ -1,11 +1,13 @@
 import typer
 import json
 from rich import print
+from rich.panel import Panel
 from rich.console import Console
 from typing import Annotated
 
 from argus.orchestrator import Orchestrator
 from argus.repositories.sqlite_repository import SQLiteRepository
+from argus.resolver.resolver import Doublon
 
 err_console = Console(stderr=True)
 app = typer.Typer()
@@ -19,10 +21,30 @@ def import_(
     print(f"source: {source_path}\tmapping_path: {mapping_path}")
     orchestrator = Orchestrator(source_path, mapping_path, ":memory:")
 
-    orchestrator.run()
+    doublons: list[Doublon] = orchestrator.run()
     print(
         f"[bold green]Success![/bold green] {orchestrator.nb_entities} entities and {orchestrator.nb_relations} relations created!"
     )
+    if doublons:
+        for doublon in doublons:
+            conflicts_list = ""
+            prop_key = doublon.prop_key
+            for entity in doublon.entities:
+                conflict_value = entity.properties[prop_key]
+                conflicts_list += f"\t#{entity.id} -> {conflict_value}\n"
+
+            print(
+                Panel(
+                    f"Type: {doublon.entity_type}\nProperty: {doublon.prop_key}\n\nConflicts ({len(doublon.entities)})\n{conflicts_list}",
+                    title="[bold yellow]Unique key conflicts",
+                    width=100,
+                    title_align="left",
+                )
+            )
+
+        print(
+            f"[bold red]{len(doublons)} conflicts[/bold red]\nYou can use 'argus inspect <id>' for details"
+        )
 
 
 @app.command()

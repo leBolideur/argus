@@ -1,10 +1,12 @@
 first_name,last_name,email,company,role,start_date
 John,Doe,john.doe@openai.com,OpenAI,Software Engineer,2023-01-15
-John,Doe,john.doe@openai.com,OpenAI,Software Engineer,2023-01-15
+Johny,Doe,john.DOE@openai.com,OpenAI,Software Engineer,2023-01-15
+Johny,Doe,John.DOE@openai.com,OpenAI,Software Engineer,2023-01-15
+Johny,Doe,johN.Doe@openai.com   ,OpenAI,Software Engineer,2023-01-15
 Jane,Smith,jane.smith@google.com,Google,Product Manager,2022-06-01
 Bob,Johnson,bob.johnson@anthropic.com,Anthropic,Research Scientist,2024-03-10
 Alice,Wonder,alice.wonder@proton.me,Proton,Backend Developer,2021-09-20
-Charlie,Brown,charlie.brown@meta.com,Meta,Data Engineer,2023-11-05
+Charlie,Brown,   charlie.brown@meta.com,Meta,Data Engineer,2023-11-05
 Charlie,Brown,charlie.brown@meta.com,Meta,Data Engineer,2023-11-05
 Diana,Prince,diana.prince@amazon.com,Amazon,Solutions Architect,2022-02-14
 Ethan,Hunt,ethan.hunt@apple.com,Apple,Security Engineer,2024-01-30

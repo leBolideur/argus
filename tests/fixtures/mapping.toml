@@ -8,7 +8,7 @@ property = "last_name"
 
 [columns.email]
 entity = "Email"
-property = "value"
+property = "email"
 unique = true
 
 [columns.company]

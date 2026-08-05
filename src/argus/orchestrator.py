@@ -1,10 +1,9 @@
-from argus.resolver.resolver import Resolver
+from argus.resolver.resolver import Resolver, Doublon
 from argus.builder import Builder, Relationship
 from argus.connectors.csv_connector import CSVConnector
 from argus.mapper import Mapper
 from argus.models.entity import Entity
 from argus.repositories.sqlite_repository import SQLiteRepository
-from argus.resolver.exactmatch_comparer import ExactMatchComparer
 
 
 class Orchestrator:
@@ -16,7 +15,7 @@ class Orchestrator:
 
         self.repo = SQLiteRepository(db_path=db_path)
 
-    def run(self) -> None:
+    def run(self) -> list[Doublon]:
         entities = self._csv_to_entities()
         self.nb_entities = sum([len(group) for group in entities])
         self._save_entities(entities)
@@ -26,10 +25,12 @@ class Orchestrator:
         self.nb_relations = len(relations)
         self._save_relations(relations)
 
-        resolver = Resolver(self.mapping_path, self.repo, ExactMatchComparer())
-        resolver.resolve()
+        resolver = Resolver(self.mapping_path)
+        conflicts = resolver.resolve(entities)
 
         self.repo.close()
+
+        return conflicts
 
     def _csv_to_entities(self) -> list[list[Entity]]:
         records = CSVConnector().read(self.source_path)
