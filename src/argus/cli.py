@@ -21,7 +21,7 @@ def import_(
     print(f"source: {source_path}\tmapping_path: {mapping_path}")
     orchestrator = Orchestrator(source_path, mapping_path, ":memory:")
 
-    doublons: list[Doublon] = orchestrator.run()
+    doublons: list[Doublon] | None = orchestrator.run()
     print(
         f"[bold green]Success![/bold green] {orchestrator.nb_entities} entities and {orchestrator.nb_relations} relations created!"
     )
@@ -49,7 +49,7 @@ def import_(
 
 @app.command()
 def inspect(entity_id: Annotated[int, typer.Argument()]):
-    repo = SQLiteRepository("argus.db")
+    repo = SQLiteRepository(":memory:")
     entity = repo.get_entity(entity_id)
 
     if entity is not None:
@@ -78,7 +78,7 @@ def search(
     property: Annotated[str, typer.Option("-p")],
     value: Annotated[str, typer.Option("-v")],
 ):
-    repo = SQLiteRepository("argus.db")
+    repo = SQLiteRepository(":memory:")
 
     try:
         entities = repo.search_entities_by_property(property, value)

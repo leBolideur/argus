@@ -15,7 +15,7 @@ class Orchestrator:
 
         self.repo = SQLiteRepository(db_path=db_path)
 
-    def run(self) -> list[Doublon]:
+    def run(self) -> list[Doublon] | None:
         entities = self._csv_to_entities()
         self.nb_entities = sum([len(group) for group in entities])
         self._save_entities(entities)
