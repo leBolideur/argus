@@ -19,7 +19,7 @@ def import_(
     mapping_path: Annotated[str, typer.Option("-m")] = "mapping.toml",
 ):
     print(f"source: {source_path}\tmapping_path: {mapping_path}")
-    orchestrator = Orchestrator(source_path, mapping_path, ":memory:")
+    orchestrator = Orchestrator(source_path, mapping_path, "argus.db")
 
     doublons: list[Doublon] | None = orchestrator.run()
     print(
@@ -49,7 +49,7 @@ def import_(
 
 @app.command()
 def inspect(entity_id: Annotated[int, typer.Argument()]):
-    repo = SQLiteRepository(":memory:")
+    repo = SQLiteRepository("argus.db")
     entity = repo.get_entity(entity_id)
 
     if entity is not None:
@@ -78,7 +78,7 @@ def search(
     property: Annotated[str, typer.Option("-p")],
     value: Annotated[str, typer.Option("-v")],
 ):
-    repo = SQLiteRepository(":memory:")
+    repo = SQLiteRepository("argus.db")
 
     try:
         entities = repo.search_entities_by_property(property, value)
