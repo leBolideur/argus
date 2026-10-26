@@ -8,4 +8,7 @@ class CSVConnector(BaseConnector):
     def read(self, path: str) -> list[Record]:
         with open(path, encoding="utf-8") as file:
             reader = csv.DictReader(file)
-            return [Record(source=path, fields=row) for row in reader]
+            return [
+                Record(source=path, line=line, fields=row)
+                for (line, row) in enumerate(reader)
+            ]

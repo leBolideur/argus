@@ -1,0 +1,9 @@
+first_name,last_name,contact
+Jean,Dupont,jean.dupont@example.com
+Marie,Martin,marie.martin@example.com
+Bob,Johnson,bob.j@example.com
+Alice,Wonder,alice.w@example.com
+Charlie,Brown,charlie.b@example.com
+Diana,Prince,not-an-email
+Ethan,Hunt,?? broken
+Fiona,Shrek,incomplete@

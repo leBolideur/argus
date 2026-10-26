@@ -1,8 +1,17 @@
 from dataclasses import dataclass
+from enum import StrEnum
+
+
+class EntityType(StrEnum):
+    UNKNOWN = ("UNKNOWN",)
+    EMAIL = ("EMAIL",)
+    PERSON = ("PERSON",)
 
 
 @dataclass
 class Entity:
-    type: str
+    type: EntityType
+    source: str
+    line: int
     properties: dict
     id: int = 0

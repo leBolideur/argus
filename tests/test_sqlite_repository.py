@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from argus.models.entity import Entity
+from argus.models.entity import Entity, EntityType
 from argus.models.relationship import Relationship
 from argus.repositories.sqlite_repository import SQLiteRepository
 
@@ -16,7 +16,9 @@ def repo():
 
 def test_entities(repo: SQLiteRepository):
     entity = Entity(
-        type="PERSON",
+        type=EntityType.PERSON,
+        source="test.csv",
+        line=0,
         properties={
             "firstname": "foo",
             "lastname": "bar",
@@ -33,8 +35,19 @@ def test_entities(repo: SQLiteRepository):
 
 
 def test_relationships(repo: SQLiteRepository):
-    entity1 = repo.insert_entity(Entity(type="PERSON", properties={"name": "Bob"}))
-    entity2 = repo.insert_entity(Entity(type="COMPANY", properties={"name": "proton"}))
+    entity1 = repo.insert_entity(
+        Entity(
+            type=EntityType.PERSON, source="test", line=0, properties={"name": "Bob"}
+        )
+    )
+    entity2 = repo.insert_entity(
+        Entity(
+            type=EntityType.UNKNOWN,
+            source="test",
+            line=1,
+            properties={"name": "proton"},
+        )
+    )
 
     relationship = Relationship(
         type="WORK_AT",

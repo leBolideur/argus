@@ -1,9 +1,9 @@
-from typing import Any
+import json
 import re
 import sqlite3
-import json
+from typing import Any
 
-from argus.models.entity import Entity
+from argus.models.entity import Entity, EntityType
 from argus.models.relationship import Relationship
 from argus.repositories.base_repository import BaseRepository
 
@@ -18,7 +18,28 @@ class SQLiteRepository(BaseRepository):
 
     def create_tables(self):
         self.conn.cursor().execute(
-            "CREATE TABLE IF NOT EXISTS entities(id integer primary key autoincrement not null, type varchar(255) not null, properties text not null)"
+            """CREATE TABLE IF NOT EXISTS entity_types(
+                id integer primary key autoincrement not null,
+                name varchar(255) not null
+                )"""
+        )
+
+        for type in EntityType:
+            self.conn.cursor().execute(
+                "INSERT INTO entity_types(name) VALUES(:name)",
+                {"name": type},
+            )
+        self.conn.commit()
+
+        self.conn.cursor().execute(
+            """CREATE TABLE IF NOT EXISTS entities(
+                id integer primary key autoincrement not null,
+                source varchar(255) not null,
+                line integer not null,
+                type integer not null,
+                properties text not null,
+                FOREIGN KEY(type) REFERENCES entity_types(id)
+                )"""
         )
 
         self.conn.cursor().execute(
@@ -34,10 +55,20 @@ class SQLiteRepository(BaseRepository):
         )
 
     def insert_entity(self, entity: Entity) -> int:
+        type = self.conn.cursor().execute(
+            "SELECT id FROM entity_types WHERE name = :name", {"name": entity.type}
+        )
+        type_id = type.fetchone()[0]
+
         properties = json.dumps(entity.properties)
         query = self.conn.cursor().execute(
-            "INSERT INTO entities(properties, type) VALUES(:properties, :type) RETURNING id",
-            {"properties": properties, "type": entity.type},
+            "INSERT INTO entities(source, line, type, properties) VALUES(:source, :line, :type, :properties) RETURNING id",
+            {
+                "source": entity.source,
+                "line": entity.line,
+                "properties": properties,
+                "type": type_id,
+            },
         )
         row = query.fetchone()
         self.conn.commit()
@@ -53,7 +84,11 @@ class SQLiteRepository(BaseRepository):
 
     def get_entity(self, id: int) -> Entity | None:
         query = self.conn.cursor().execute(
-            "SELECT * FROM entities WHERE id = :id", {"id": id}
+            """SELECT e.id, e.source, e.line, e.properties, t.name as type
+            FROM entities e
+            INNER JOIN entity_types t ON t.id = e.type
+            WHERE e.id = :id""",
+            {"id": id},
         )
         entity = query.fetchone()
 
@@ -62,6 +97,8 @@ class SQLiteRepository(BaseRepository):
 
         return Entity(
             id=entity["id"],
+            source=entity["source"],
+            line=entity["line"],
             type=entity["type"],
             properties=json.loads(entity["properties"]),
         )
@@ -72,6 +109,8 @@ class SQLiteRepository(BaseRepository):
         return [
             Entity(
                 id=entity["id"],
+                source=entity["source"],
+                line=entity["line"],
                 type=entity["type"],
                 properties=json.loads(entity["properties"]),
             )
@@ -85,7 +124,11 @@ class SQLiteRepository(BaseRepository):
         rows = query.fetchall()
         return [
             Entity(
-                id=row["id"], type=row["type"], properties=json.loads(row["properties"])
+                id=row["id"],
+                source=row["source"],
+                line=row["line"],
+                type=row["type"],
+                properties=json.loads(row["properties"]),
             )
             for row in rows
         ]
@@ -161,7 +204,11 @@ class SQLiteRepository(BaseRepository):
 
         entities = [
             Entity(
-                id=row["id"], type=row["type"], properties=json.loads(row["properties"])
+                id=row["id"],
+                source=row["source"],
+                line=row["line"],
+                type=row["type"],
+                properties=json.loads(row["properties"]),
             )
             for row in results
         ]

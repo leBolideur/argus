@@ -7,7 +7,6 @@ from typing import Annotated
 
 from argus.orchestrator import Orchestrator
 from argus.repositories.sqlite_repository import SQLiteRepository
-from argus.resolver.resolver import Doublon
 
 err_console = Console(stderr=True)
 app = typer.Typer()
@@ -16,12 +15,10 @@ app = typer.Typer()
 @app.command()
 def import_(
     source_path: Annotated[str, typer.Argument()],
-    mapping_path: Annotated[str, typer.Option("-m")] = "mapping.toml",
 ):
-    print(f"source: {source_path}\tmapping_path: {mapping_path}")
-    orchestrator = Orchestrator(source_path, mapping_path, "argus.db")
+    orchestrator = Orchestrator(source_path, ":memory:")
 
-    doublons: list[Doublon] | None = orchestrator.run()
+    doublons: list | None = orchestrator.run()
     print(
         f"[bold green]Success![/bold green] {orchestrator.nb_entities} entities and {orchestrator.nb_relations} relations created!"
     )
