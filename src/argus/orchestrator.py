@@ -1,6 +1,6 @@
 from argus.builder import Builder, Relationship
 from argus.connectors.csv_connector import CSVConnector
-from argus.models.entity import Entity
+from argus.models.entity import Entity, EntityType
 from argus.repositories.sqlite_repository import SQLiteRepository
 from argus.validator import Validator
 
@@ -15,8 +15,12 @@ class Orchestrator:
 
     def run(self) -> list | None:
         entities = self._csv_to_entities()
+        print("\n\tEntities grouped\n\n", entities)
         self.nb_entities = sum([len(group) for group in entities])
-        # self._save_entities(entities)
+        self._save_entities(entities)
+        print("\n\tRes:\n\n")
+        by_mail = self.repo.get_all_entities_by_type(EntityType.EMAIL)
+        print(by_mail)
 
         builder = Builder()
         relations = builder.build(entities)
@@ -34,6 +38,8 @@ class Orchestrator:
         records = CSVConnector().read(self.source_path)
         validator = Validator()
         entities = validator.make_grouped_entities(records=records)
+
+        # print(entities)
 
         return entities
 

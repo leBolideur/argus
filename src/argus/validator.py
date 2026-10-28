@@ -40,17 +40,6 @@ class Validator:
             return EntityType.UNKNOWN
 
         percent = first_int * 100 / total_not_unknown
-        print(
-            "first: ",
-            first,
-            "\ttotal: ",
-            len(guesses),
-            "\ttotal n_u: ",
-            total_not_unknown,
-            "\tpercent: ",
-            percent,
-            "%",
-        )
 
         if len(sorted_props) > 1 and first_int == sorted_props[1][1]:
             return EntityType.UNKNOWN
@@ -61,36 +50,31 @@ class Validator:
 
     def make_grouped_entities(self, records: list[Record]) -> list[list[Entity]]:
         entities: list[list[Entity]] = []
-        records_attributes: dict[str, list[EntityType]] = {}
+        records_guesses: dict[str, list[EntityType]] = {}
         for record in records:
-            # group = []
+            group = []
 
             for key, value in record.fields.items():
                 guess = self.infer_record_attribute(value)
 
-                if key in records_attributes.keys():
-                    records_attributes[key].append(guess)
+                if key in records_guesses.keys():
+                    records_guesses[key].append(guess)
                 else:
-                    records_attributes[key] = [guess]
+                    records_guesses[key] = [guess]
 
-        for key, type_ls in records_attributes.items():
-            verdict = self.get_verdict(type_ls)
-            print(key, " >> ", verdict)
+            for key, type_ls in records_guesses.items():
+                guess = self.infer_record_attribute(record.fields[key])
+                verdict = self.get_verdict(type_ls)
 
-        #             for key, value in record.fields.items():
-        #                 type = EntityType.UNKNOWN
-        #                 if "mail" in key and self.is_email(value):
-        #                     type = EntityType.EMAIL
-        #                     print(key, value)
-        #
-        #                 entity = Entity(
-        #                     type=type,
-        #                     source=record.source,
-        #                     line=record.line,
-        #                     properties=value,
-        #                 )
-        #
-        #                 group.append(entity)
-        #             entities.append(group)
+                entity = Entity(
+                    type=verdict,
+                    trusted=guess == verdict,
+                    source=record.source,
+                    line=record.line,
+                    properties={key: record.fields[key]},
+                )
+
+                group.append(entity)
+            entities.append(group)
 
         return entities

@@ -17,6 +17,7 @@ def repo():
 def test_entities(repo: SQLiteRepository):
     entity = Entity(
         type=EntityType.PERSON,
+        trusted=True,
         source="test.csv",
         line=0,
         properties={
@@ -32,17 +33,23 @@ def test_entities(repo: SQLiteRepository):
     assert get_entity.id == 1
     assert get_entity.properties == {"firstname": "foo", "lastname": "bar"}
     assert get_entity.type == "PERSON"
+    assert get_entity.trusted
 
 
 def test_relationships(repo: SQLiteRepository):
     entity1 = repo.insert_entity(
         Entity(
-            type=EntityType.PERSON, source="test", line=0, properties={"name": "Bob"}
+            type=EntityType.PERSON,
+            trusted=True,
+            source="test",
+            line=0,
+            properties={"name": "Bob"},
         )
     )
     entity2 = repo.insert_entity(
         Entity(
             type=EntityType.UNKNOWN,
+            trusted=True,
             source="test",
             line=1,
             properties={"name": "proton"},

@@ -20,13 +20,13 @@ class SQLiteRepository(BaseRepository):
         self.conn.cursor().execute(
             """CREATE TABLE IF NOT EXISTS entity_types(
                 id integer primary key autoincrement not null,
-                name varchar(255) not null
+                name varchar(255) not null unique
                 )"""
         )
 
         for type in EntityType:
             self.conn.cursor().execute(
-                "INSERT INTO entity_types(name) VALUES(:name)",
+                "INSERT OR IGNORE INTO entity_types(name) VALUES(:name)",
                 {"name": type},
             )
         self.conn.commit()
@@ -37,6 +37,7 @@ class SQLiteRepository(BaseRepository):
                 source varchar(255) not null,
                 line integer not null,
                 type integer not null,
+                trusted bool not null,
                 properties text not null,
                 FOREIGN KEY(type) REFERENCES entity_types(id)
                 )"""
@@ -62,12 +63,13 @@ class SQLiteRepository(BaseRepository):
 
         properties = json.dumps(entity.properties)
         query = self.conn.cursor().execute(
-            "INSERT INTO entities(source, line, type, properties) VALUES(:source, :line, :type, :properties) RETURNING id",
+            "INSERT INTO entities(source, line, type, trusted, properties) VALUES(:source, :line, :type, :trusted, :properties) RETURNING id",
             {
                 "source": entity.source,
                 "line": entity.line,
                 "properties": properties,
                 "type": type_id,
+                "trusted": entity.trusted,
             },
         )
         row = query.fetchone()
@@ -84,7 +86,7 @@ class SQLiteRepository(BaseRepository):
 
     def get_entity(self, id: int) -> Entity | None:
         query = self.conn.cursor().execute(
-            """SELECT e.id, e.source, e.line, e.properties, t.name as type
+            """SELECT e.id, e.source, e.line, e.properties, e.trusted, t.name as type
             FROM entities e
             INNER JOIN entity_types t ON t.id = e.type
             WHERE e.id = :id""",
@@ -100,18 +102,23 @@ class SQLiteRepository(BaseRepository):
             source=entity["source"],
             line=entity["line"],
             type=entity["type"],
+            trusted=True if entity["trusted"] == 1 else False,
             properties=json.loads(entity["properties"]),
         )
 
     def get_all_entities(self) -> list[Entity]:
-        query = self.conn.cursor().execute("SELECT * FROM entities")
+        # TODO: Get type name in entity_types
+        query = self.conn.cursor().execute(
+            "SELECT e.*, t.name as type_name FROM entities e INNER JOIN entity_types t ON e.type = t.id"
+        )
         rows = query.fetchall()
         return [
             Entity(
                 id=entity["id"],
                 source=entity["source"],
                 line=entity["line"],
-                type=entity["type"],
+                type=entity["type_name"],
+                trusted=entity["trusted"],
                 properties=json.loads(entity["properties"]),
             )
             for entity in rows
@@ -119,7 +126,10 @@ class SQLiteRepository(BaseRepository):
 
     def get_all_entities_by_type(self, type: str) -> list[Entity]:
         query = self.conn.cursor().execute(
-            "SELECT * FROM entities WHERE type = :type", {"type": type}
+            """SELECT e.id, e.source, e.line, e.type, e.properties, e.trusted, t.name as type_name, t.id
+            FROM entities e INNER JOIN entity_types t ON e.type = t.id
+            WHERE t.name = :type""",
+            {"type": type},
         )
         rows = query.fetchall()
         return [
@@ -127,7 +137,8 @@ class SQLiteRepository(BaseRepository):
                 id=row["id"],
                 source=row["source"],
                 line=row["line"],
-                type=row["type"],
+                type=row["type_name"],
+                trusted=True if row["trusted"] == 1 else False,
                 properties=json.loads(row["properties"]),
             )
             for row in rows
@@ -208,6 +219,7 @@ class SQLiteRepository(BaseRepository):
                 source=row["source"],
                 line=row["line"],
                 type=row["type"],
+                trusted=row["trusted"],
                 properties=json.loads(row["properties"]),
             )
             for row in results
