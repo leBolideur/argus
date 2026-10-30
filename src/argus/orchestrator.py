@@ -1,4 +1,3 @@
-from argus.builder import Builder, Relationship
 from argus.connectors.csv_connector import CSVConnector
 from argus.models.entity import Entity
 from argus.repositories.sqlite_repository import SQLiteRepository
@@ -15,20 +14,8 @@ class Orchestrator:
 
     def run(self) -> list | None:
         entities = self._csv_to_entities()
-        print("\n\tEntities grouped\n\n", entities)
         self.nb_entities = sum([len(group) for group in entities])
         self._save_entities(entities)
-        # print("\n\tRes:\n\n")
-        # by_mail = self.repo.get_all_entities_by_type(EntityType.EMAIL)
-        # print(by_mail)
-
-        builder = Builder()
-        relations = builder.build(entities)
-        self.nb_relations = len(relations)
-        # self._save_relations(relations)
-
-        # resolver = Resolver()
-        # conflicts = resolver.resolve(entities)
 
         self.repo.close()
 
@@ -43,6 +30,3 @@ class Orchestrator:
 
     def _save_entities(self, entities: list[list[Entity]]) -> None:
         self.repo.insert_batch_entities(entities)
-
-    def _save_relations(self, relations: list[Relationship]) -> None:
-        self.repo.insert_batch_relations(relations)
