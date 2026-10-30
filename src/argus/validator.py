@@ -9,20 +9,20 @@ class Validator:
     def __init__(self) -> None:
         pass
 
-    def is_email(self, email: str) -> bool:
+    def _is_email(self, email: str) -> bool:
         try:
             validate_email(email, check_deliverability=False)
             return True
         except EmailSyntaxError:
             return False
 
-    def infer_record_attribute(self, value: str) -> EntityType:
-        if self.is_email(value):
+    def _infer_record_attribute(self, value: str) -> EntityType:
+        if self._is_email(value):
             return EntityType.EMAIL
 
         return EntityType.UNKNOWN
 
-    def get_verdict(self, guesses: list[EntityType]) -> EntityType:
+    def _get_verdict(self, guesses: list[EntityType]) -> EntityType:
         proposals: dict[EntityType, int] = {}
         for guess in guesses:
             if guess in proposals.keys():
@@ -48,30 +48,49 @@ class Validator:
 
         return EntityType.UNKNOWN
 
-    def make_grouped_entities(self, records: list[Record]) -> list[list[Entity]]:
-        entities: list[list[Entity]] = []
-        records_guesses: dict[str, list[EntityType]] = {}
-        for record in records:
-            group = []
+    def _make_acc_guess(
+        self, records: list[Record]
+    ) -> tuple[dict[str, list[EntityType]], dict[int, dict[str, EntityType]]]:
+        acc_guessed: dict[str, list[EntityType]] = {}
+        individual_guess: dict[int, dict[str, EntityType]] = {}
 
-            for key, value in record.fields.items():
-                guess = self.infer_record_attribute(value)
+        for index, record in enumerate(records):
+            individual_guess[index] = {}
+            for field_k, field_v in record.fields.items():
+                guessed_type = self._infer_record_attribute(field_v)
+                individual_guess[index][field_k] = guessed_type
 
-                if key in records_guesses.keys():
-                    records_guesses[key].append(guess)
+                if field_k in acc_guessed.keys():
+                    acc_guessed[field_k].append(guessed_type)
                 else:
-                    records_guesses[key] = [guess]
+                    acc_guessed[field_k] = [guessed_type]
 
-            for key, type_ls in records_guesses.items():
-                guess = self.infer_record_attribute(record.fields[key])
-                verdict = self.get_verdict(type_ls)
+        return (acc_guessed, individual_guess)
+
+    def make_grouped_entities(self, records: list[Record]) -> list[list[Entity]]:
+        acc_guessed, individual_guess = self._make_acc_guess(records)
+        acc_verdict: dict[str, EntityType] = {}
+        for field_name, field_guesses in acc_guessed.items():
+            field_verdict = self._get_verdict(field_guesses)
+            acc_verdict[field_name] = field_verdict
+
+        entities = []
+        for index, record in enumerate(records):
+            group = []
+            for field_k, field_v in record.fields.items():
+                verdict = acc_verdict[field_k]
+                guess = individual_guess[index][field_k]
+
+                trusted = verdict == guess
+                if guess == EntityType.UNKNOWN:
+                    trusted = False
 
                 entity = Entity(
                     type=verdict,
-                    trusted=guess == verdict,
+                    trusted=trusted,
                     source=record.source,
                     line=record.line,
-                    properties={key: record.fields[key]},
+                    properties={field_k: field_v},
                 )
 
                 group.append(entity)

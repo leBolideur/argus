@@ -107,7 +107,6 @@ class SQLiteRepository(BaseRepository):
         )
 
     def get_all_entities(self) -> list[Entity]:
-        # TODO: Get type name in entity_types
         query = self.conn.cursor().execute(
             "SELECT e.*, t.name as type_name FROM entities e INNER JOIN entity_types t ON e.type = t.id"
         )
